@@ -1,0 +1,6 @@
+.venv/
+workout_diary/.idea/
+workout_diary/venv/
+workout_diary/*.iml
+**/__pycache__/
+identifier.sqlite
