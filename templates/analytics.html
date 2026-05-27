@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Analytics</title>
+</head>
+<body>
+    <a href="/">← Back to Dashboard</a>
+
+    <h2>Your Fitness Analytics</h2>
+    <p>Here is the progress you have made so far:</p>
+
+    <hr>
+
+<ul>
+        <li><strong>Total workouts completed:</strong> {{ total_workouts }}</li>
+        <li><strong>Total time spent training:</strong> {{ total_duration }} minutes or {{ (total_duration / 60) | round(1) }} hours</li>
+        <li><strong>Your favorite sport:</strong> {{ favorite_sport }}</li>
+        <li><strong>Your longest workout (Personal Record):</strong> {{ max_duration }} minutes</li>
+        <li><strong>Average workout duration:</strong> {{ avg_duration }} minutes</li>
+</ul>
+
+    <hr>
+</body>
+</html>

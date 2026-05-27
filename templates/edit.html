@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Workout</title>
+</head>
+<body>
+    <h2>Edit Workout</h2>
+    <form method="POST">
+        <label>Date:</label><br>
+        <input type="text" name="date" value="{{ workout['date'] }}" placeholder="YYYY-MM-DD" required><br><br>
+
+        <label>Sport Type:</label><br>
+        <input type="text" name="sport_type" value="{{ workout['sport_type'] }}" required><br><br>
+
+        <label>Duration (minutes):</label><br>
+        <input type="number" name="duration" value="{{ workout['duration'] }}" required><br><br>
+
+        <button type="submit">Save Changes</button>
+    </form>
+    <br>
+    <a href="/workouts">Cancel and Go Back</a>
+</body>
+</html>
