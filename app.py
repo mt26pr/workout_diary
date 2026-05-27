@@ -38,11 +38,17 @@ def get_db_connection():
 def index():
     return render_template('dashboard.html')
 
+# workouts
 @app.route('/workouts')
 @login_required
 def workouts_history():
     conn = get_db_connection()
-    workouts = conn.execute('SELECT * FROM workouts WHERE user_id = ?', (current_user.id,)).fetchall()
+    workouts = conn.execute('''
+                            SELECT workouts.*, sports.name as sport_name
+                            FROM workouts
+                                     INNER JOIN sports ON workouts.sport_id = sports.id
+                            WHERE workouts.user_id = ?
+                            ''', (current_user.id,)).fetchall()
     conn.close()
     return render_template('index.html', workouts=workouts)
 
@@ -51,17 +57,25 @@ def workouts_history():
 @login_required
 def add():
     if request.method == 'POST':
-        date = request.form['date']
-        sport = request.form['sport_type']
+        date_value = request.form['date']
+        sport_id = request.form['sport_id']
         duration = request.form['duration']
 
         conn = get_db_connection()
-        conn.execute('INSERT INTO workouts (user_id, date, sport_type, duration) VALUES (?, ?, ?, ?)',
-                     (current_user.id, date, sport, duration))
+        conn.execute('INSERT INTO workouts (user_id, date, sport_id, duration) VALUES (?, ?, ?, ?)',
+                     (current_user.id, date_value, sport_id, duration))
         conn.commit()
         conn.close()
+        flash('Workout added successfully!', 'success')
         return redirect('/workouts')
-    return render_template('add.html')
+    conn = get_db_connection()
+    sports = conn.execute('SELECT * FROM sports').fetchall()
+
+    # to see variants
+    from datetime import date
+    today_date = date.today().strftime('%Y-%m-%d')
+    conn.close()
+    return render_template('add.html', sports=sports, today_date=today_date)
 
 # registration
 @app.route('/register', methods=('GET', 'POST'))
@@ -131,17 +145,19 @@ def analytics():
 
     # favourite sport
     favorite_sport_row = conn.execute('''
-                                      SELECT sport_type, COUNT(sport_type) as count
+                                      SELECT sports.name, COUNT(workouts.sport_id) as count
                                       FROM workouts
-                                      WHERE user_id = ?
-                                      GROUP BY sport_type
+                                               INNER JOIN sports ON workouts.sport_id = sports.id
+                                      WHERE workouts.user_id = ?
+                                      GROUP BY workouts.sport_id
                                       ORDER BY count DESC
                                       LIMIT 1
                                       ''', (current_user.id,)).fetchone()
     if favorite_sport_row:
-        favorite_sport = favorite_sport_row['sport_type']
+        favorite_sport = favorite_sport_row['name']
     else:
         favorite_sport = 'None yet'
+
     # record
     max_duration_row = conn.execute(
         'SELECT MAX(duration) as max_dur FROM workouts WHERE user_id = ?',
@@ -172,6 +188,7 @@ def delete_workout(workout_id):
     conn.execute('DELETE FROM workouts WHERE id = ? AND user_id = ?', (workout_id, current_user.id))
     conn.commit()
     conn.close()
+    flash('Workout deleted successfully!', 'success')
     return redirect('/workouts')
 
 # edit workout
@@ -186,21 +203,23 @@ def edit_workout(workout_id):
         return redirect('/workouts')
     if request.method == 'POST':
         date = request.form['date']
-        sport = request.form['sport_type']
+        sport_id = request.form['sport_id']
         duration = request.form['duration']
         conn.execute('''
                  UPDATE workouts
                  SET date       = ?,
-                     sport_type = ?,
+                     sport_id = ?,
                      duration   = ?
                  WHERE id = ?
                    AND user_id = ?
-                 ''', (date, sport, duration, workout_id, current_user.id))
+                 ''', (date, sport_id, duration, workout_id, current_user.id))
         conn.commit()
         conn.close()
+        flash('Workout updated successfully!', 'success')
         return redirect('/workouts')
+    sports = conn.execute('SELECT * FROM sports').fetchall()
     conn.close()
-    return render_template('edit.html', workout=workout)
+    return render_template('edit.html', workout=workout, sports=sports)
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -11,10 +11,16 @@
         <input type="text" name="date" value="{{ workout['date'] }}" placeholder="YYYY-MM-DD" required><br><br>
 
         <label>Sport Type:</label><br>
-        <input type="text" name="sport_type" value="{{ workout['sport_type'] }}" required><br><br>
+        <select name="sport_id" required>
+        {% for sport in sports %}
+            <option value="{{ sport['id'] }}" {% if sport['id'] == workout['sport_id'] %}selected{% endif %}>
+                {{ sport['name'] }}
+            </option>
+        {% endfor %}
+        </select><br><br>
 
-        <label>Duration (minutes):</label><br>
-        <input type="number" name="duration" value="{{ workout['duration'] }}" required><br><br>
+    <label>Length (min):</label><br>
+    <input type="number" name="duration" min="1" required><br><br>
 
         <button type="submit">Save Changes</button>
     </form>

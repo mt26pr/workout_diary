@@ -13,11 +13,16 @@
 <h1>New training...</h1>
 
 <form method="POST">
-    <label>Date:</label>
-    <input type="text" name="date" placeholder="year-month-day" required>
+    <label>Date:</label><br>
+    <input type="text" name="date" value="{{ today_date }}" placeholder="YYYY-MM-DD" required><br><br>
 
     <label>Sport type:</label>
-    <input type="text" name="sport_type" placeholder="Running, Swimming, Flying" required>
+    <select name="sport_id" required>
+        <option value="" disabled selected>Choose a sport...</option>
+        {% for sport in sports %}
+            <option value="{{ sport['id'] }}">{{ sport['name'] }}</option>
+        {% endfor %}
+    </select><br><br>
 
     <label>Length (min):</label>
     <input type="number" name="duration" required>

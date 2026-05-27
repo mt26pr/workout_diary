@@ -4,13 +4,24 @@
     <title>My workout diary</title>
 </head>
 <body>
-<p>Hello, {{ current_user.username }}! <a href="/logout">Log out</a></p>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="flash {{ category }}" style="color: {% if category == 'success' %}green{% else %}red{% endif %}; font-weight: bold;">
+        {{ message }}
+      </div>
+    {% endfor %}
+    <br>
+  {% endif %}
+{% endwith %}
+
 <h1>My trainings</h1>
 <a href="/add">Add training...</a>
 <ul>
     {% for workout in workouts %}
     <li>
-        {{ workout['date'] }} - {{ workout['sport_type'] }} ({{ workout['duration'] }} min)
+        {{ workout['date'] }} - {{ workout['sport_name'] }} ({{ workout['duration'] }} min)
         | <a href="/edit/{{ workout['id'] }}" style="color: blue;">Edit</a>
         | <a href="/delete/{{ workout['id'] }}" onclick="return confirm('Are you sure?');" style="color: red;">Delete</a>
     </li>
