@@ -1,32 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>My workout diary</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workout History - Workout Diary</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
+<body class="app-body">
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    {% for category, message in messages %}
-      <div class="flash {{ category }}" style="color: {% if category == 'success' %}green{% else %}red{% endif %}; font-weight: bold;">
-        {{ message }}
-      </div>
-    {% endfor %}
-    <br>
-  {% endif %}
-{% endwith %}
+    <header class="main-header">
+        <div class="header-container">
+            <a href="/" class="logo">💪 WorkoutDiary</a>
+            <nav class="nav-links">
+                <a href="/">Dashboard</a>
+                <a href="/workouts" class="active">History</a>
+                <a href="/analytics">Analytics</a>
+            </nav>
+        </div>
+    </header>
 
-<h1>My trainings</h1>
-<a href="/add">Add training...</a>
-<ul>
-    {% for workout in workouts %}
-    <li>
-        {{ workout['date'] }} - {{ workout['sport_name'] }} ({{ workout['duration'] }} min)
-        | <a href="/edit/{{ workout['id'] }}" style="color: blue;">Edit</a>
-        | <a href="/delete/{{ workout['id'] }}" onclick="return confirm('Are you sure?');" style="color: red;">Delete</a>
-    </li>
-    {% endfor %}
-</ul>
+    <main class="main-container">
+
+        <div class="page-header">
+            <h1>Workout History</h1>
+            <a href="/add" class="btn-add">+ Add Workout</a>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="flash-message {{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <div class="workout-list">
+            {% for workout in workouts %}
+                <div class="workout-card">
+                    <div class="workout-info">
+                        <span class="workout-date">{{ workout['date'] }}</span>
+                        <h3 class="workout-sport">{{ workout['sport_name'] }}</h3>
+                    </div>
+
+                    <div class="workout-meta">
+                        <span class="workout-duration">⏱️ {{ workout['duration'] }} min</span>
+
+                        <div class="workout-actions">
+                            <a href="/edit/{{ workout['id'] }}" class="action-link edit">Edit</a>
+                            <a href="/delete/{{ workout['id'] }}" onclick="return confirm('Are you sure?');" class="action-link delete">Delete</a>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>No workouts recorded yet. Time to hit the gym!</p>
+                </div>
+            {% endfor %}
+        </div>
+
+    </main>
+
 </body>
 </html>
-<a href="/">← Back to Dashboard</a>

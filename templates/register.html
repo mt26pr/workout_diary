@@ -2,29 +2,42 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sign Up</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Workout Diary</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
-    <h2>Create an Account</h2>
-    <form method="POST" action="/register">
-        <label>Username:</label><br>
-        <input type="text" name="username" required><br><br>
+<body class="auth-body">
 
-        <label>Password:</label><br>
-        <input type="password" name="password" required><br><br>
+    <div class="auth-container">
+        <h2>Create Account</h2>
+        <p class="auth-subtitle">Join us to start tracking your progress</p>
 
-        <button type="submit">Register</button>
-    </form>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="flash-message error">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <p style="color: red; margin-top: 15px; font-weight: bold;">{{ message }}</p>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
+        <form method="POST" action="/register">
+            <div class="input-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Choose a username" required>
+            </div>
 
-    <br>
-    <a href="/login">Already have an account? Log In</a>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Create a strong password" required>
+            </div>
+
+            <button type="submit" class="btn-primary">Sign Up</button>
+        </form>
+
+        <div class="auth-footer">
+            Already have an account? <a href="/login">Log in here</a>
+        </div>
+    </div>
+
 </body>
 </html>

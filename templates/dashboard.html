@@ -2,22 +2,51 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Workout Diary</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
-    <h2>Welcome, {{ current_user.username }}!</h2>
-    <p>What would you like to do today?</p>
+<body class="app-body">
 
-    <hr>
+    <header class="main-header">
+        <div class="header-container">
+            <a href="/" class="logo">💪 WorkoutDiary</a>
+            <nav class="nav-links">
+                <a href="/" class="active">Dashboard</a>
+                <a href="/workouts">History</a>
+                <a href="/analytics">Analytics</a>
+            </nav>
+        </div>
+    </header>
 
-    <ul>
-        <li><a href="/add">Add New Workout</a></li>
-        <li><a href="/workouts">View Workout History</a></li>
-        <li><a href="/analytics">View Analytics</a></li>
-    </ul>
+    <main class="main-container">
 
-    <hr>
+        <div class="dashboard-welcome">
+            <h1>Welcome back, {{ current_user.username }}! 👋</h1>
+            <p>Ready to crush your fitness goals today?</p>
+        </div>
 
-    <a href="/logout">Log Out</a>
+        <div class="dashboard-grid">
+
+            <div class="dashboard-card action-card">
+                <h2>New Activity</h2>
+                <p>Finished a workout? Record it now to keep your streak alive.</p>
+                <a href="/add" class="btn-dashboard-action">+ Log Workout</a>
+            </div>
+
+            <div class="dashboard-card action-card">
+                <h2>Your Progress</h2>
+                <p>Check out your past training sessions and edit your history.</p>
+                <a href="/workouts" class="btn-dashboard-action secondary">View History</a>
+            </div>
+
+        </div>
+
+        <div class="dashboard-footer">
+            <a href="/logout" class="logout-link">Log out of account</a>
+        </div>
+
+    </main>
+
 </body>
 </html>

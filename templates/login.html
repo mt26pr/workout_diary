@@ -2,32 +2,47 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Log In</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Workout Diary</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
-    <h2>Log In to Workout Diary</h2>
-    <form method="POST" action="/login">
-        <label>Username:</label><br>
-        <input type="text" name="username" required><br><br>
+<body class="auth-body">
 
-        <label>Password:</label><br>
-        <input type="password" name="password" required><br><br>
+    <div class="auth-container">
+        <h2>Welcome Back</h2>
+        <p class="auth-subtitle">Log in to track your workouts</p>
 
-        <input type="checkbox" name="remember" id="remember">
-        <label for="remember">Stay signed in</label><br><br>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="flash-message error">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
 
-        <button type="submit">Log In</button>
-    </form>
+        <form method="POST" action="/login">
+            <div class="input-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Enter your username" required>
+            </div>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <p style="color: red; margin-top: 15px; font-weight: bold;">{{ message }}</p>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            </div>
 
-    <br>
-    <a href="/register">Don't have an account? Sign Up</a>
+            <div class="remember-me">
+                <input type="checkbox" id="remember" name="remember">
+                <label for="remember">Remember me</label>
+            </div>
+
+            <button type="submit" class="btn-primary">Sign In</button>
+        </form>
+
+        <div class="auth-footer">
+            Don't have an account? <a href="/register">Register here</a>
+        </div>
+    </div>
+
 </body>
 </html>
