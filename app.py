@@ -127,58 +127,87 @@ def logout():
     return redirect('/login')
 
 #analytics
+from datetime import datetime, timedelta
+
+
 @app.route('/analytics')
 @login_required
 def analytics():
     conn = get_db_connection()
-    #number of trainings
-    total_workouts_row = conn.execute(
-        'SELECT COUNT(*) as total FROM workouts WHERE user_id = ?',
-        (current_user.id,)).fetchone()
-    total_workouts = total_workouts_row['total']
 
-    #total duration
-    total_duration_row = conn.execute(
-        'SELECT SUM(duration) as total_sum FROM workouts WHERE user_id = ?',
-        (current_user.id,)).fetchone()
-    total_duration = total_duration_row['total_sum'] or 0
+    total_workouts = conn.execute('SELECT COUNT(*) FROM workouts WHERE user_id = ?', (current_user.id,)).fetchone()[0]
+    total_minutes = conn.execute('SELECT SUM(duration) FROM workouts WHERE user_id = ?', (current_user.id,)).fetchone()[
+                        0] or 0
+    total_hours = round(total_minutes / 60, 1)
 
-    # favourite sport
     favorite_sport_row = conn.execute('''
-                                      SELECT sports.name, COUNT(workouts.sport_id) as count
-                                      FROM workouts
-                                               INNER JOIN sports ON workouts.sport_id = sports.id
-                                      WHERE workouts.user_id = ?
-                                      GROUP BY workouts.sport_id
+                                      SELECT s.name, COUNT(w.id) as count
+                                      FROM workouts w
+                                               JOIN sports s ON w.sport_id = s.id
+                                      WHERE w.user_id = ?
+                                      GROUP BY w.sport_id
                                       ORDER BY count DESC
                                       LIMIT 1
                                       ''', (current_user.id,)).fetchone()
-    if favorite_sport_row:
-        favorite_sport = favorite_sport_row['name']
-    else:
-        favorite_sport = 'None yet'
+    favorite_sport = favorite_sport_row['name'] if favorite_sport_row else "None yet"
+    # --------------------------------
 
-    # record
-    max_duration_row = conn.execute(
-        'SELECT MAX(duration) as max_dur FROM workouts WHERE user_id = ?',
-        (current_user.id,)).fetchone()
-    max_duration = max_duration_row['max_dur'] or 0
+    today = datetime.today()
 
-    # average time
-    avg_duration_row = conn.execute(
-        'SELECT AVG(duration) as avg_dur FROM workouts WHERE user_id = ?',
-        (current_user.id,)).fetchone()
-    avg_duration = round(avg_duration_row['avg_dur'], 1) if avg_duration_row['avg_dur'] else 0
+    week_labels = []
+    week_data = []
+    for i in range(6, -1, -1):
+        day = today - timedelta(days=i)
+        day_str = day.strftime('%Y-%m-%d')
+        week_labels.append(day.strftime('%d %b'))
+
+        count = conn.execute(
+            'SELECT COUNT(*) FROM workouts WHERE user_id = ? AND date = ?',
+            (current_user.id, day_str)
+        ).fetchone()[0]
+        week_data.append(count)
+
+    month_labels = []
+    month_data = []
+    for i in range(29, -1, -1):
+        day = today - timedelta(days=i)
+        day_str = day.strftime('%Y-%m-%d')
+        month_labels.append(day.strftime('%d'))
+
+        count = conn.execute(
+            'SELECT COUNT(*) FROM workouts WHERE user_id = ? AND date = ?',
+            (current_user.id, day_str)
+        ).fetchone()[0]
+        month_data.append(count)
+
+    year_data = {}
+
+    for i in range(364, -1, -1):
+        day = today - timedelta(days=i)
+        day_str = day.strftime('%Y-%m-%d')
+
+        count = conn.execute(
+            'SELECT COUNT(*) FROM workouts WHERE user_id = ? AND date = ?',
+            (current_user.id, day_str)
+        ).fetchone()[0]
+
+        if count > 0:
+            year_data[day_str] = count
 
     conn.close()
 
     return render_template(
         'analytics.html',
         total_workouts=total_workouts,
-        total_duration=total_duration,
+        total_hours=total_hours,
         favorite_sport=favorite_sport,
-        max_duration=max_duration,
-        avg_duration=avg_duration)
+        week_labels=week_labels,
+        week_data=week_data,
+        month_labels=month_labels,
+        month_data=month_data,
+        year_data = year_data
+    )
+
 
 # delete workout
 @app.route('/delete/<int:workout_id>')

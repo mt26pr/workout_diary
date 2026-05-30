@@ -2,35 +2,73 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title> Add training! </title>
-    <style>
-        body { font-family: sans-serif; margin: 40px; }
-        form { display: flex; flex-direction: column; width: 300px; gap: 10px; }
-        input, textarea { padding: 8px; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Workout - Workout Diary</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
-<h1>New training...</h1>
+<body class="app-body">
 
-<form method="POST">
-    <label>Date:</label><br>
-    <input type="text" name="date" value="{{ today_date }}" placeholder="YYYY-MM-DD" required><br><br>
+    <header class="main-header">
+        <div class="header-container">
+            <a href="/" class="logo">💪 WorkoutDiary</a>
+            <nav class="nav-links">
+                <a href="/">Dashboard</a>
+                <a href="/workouts">History</a>
+                <a href="/analytics">Analytics</a>
+            </nav>
+        </div>
+    </header>
 
-    <label>Sport type:</label>
-    <select name="sport_id" required>
-        <option value="" disabled selected>Choose a sport...</option>
-        {% for sport in sports %}
-            <option value="{{ sport['id'] }}">{{ sport['name'] }}</option>
-        {% endfor %}
-    </select><br><br>
+    <main class="main-container form-layout">
 
-    <label>Length (min):</label>
-    <input type="number" name="duration" required>
+        <div class="form-container">
+            <h2>Log New Workout</h2>
+            <p class="form-subtitle">Enter your training details below</p>
 
-    <button type="submit">Save training</button>
-</form>
+            <form method="POST" action="/add">
 
-<br>
-<a href="/">Back to home</a>
+                <div class="input-group">
+                    <label for="sport_id">Type of Sport</label>
+                    <select id="sport_id" name="sport_id" required>
+                        <option value="" disabled selected>Select a sport...</option>
+                        {% for sport in sports %}
+                            <option value="{{ sport['id'] }}">{{ sport['name'] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="duration">Duration (minutes)</label>
+                    <input type="number" id="duration" name="duration" min="1" placeholder="e.g. 45" required>
+
+                    <div class="duration-presets">
+                        <button type="button" onclick="setDuration(15)">15m</button>
+                        <button type="button" onclick="setDuration(30)">30m</button>
+                        <button type="button" onclick="setDuration(45)">45m</button>
+                        <button type="button" onclick="setDuration(60)">1h</button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="date">Date</label>
+                    <input type="date" id="date" name="date" value="{{ today_date }}" required>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Save Workout</button>
+                    <a href="/workouts" class="btn-cancel">Cancel</a>
+                </div>
+
+            </form>
+        </div>
+
+    </main>
+
+    <script>
+        function setDuration(minutes) {
+            document.getElementById('duration').value = minutes;
+        }
+    </script>
+
 </body>
 </html>

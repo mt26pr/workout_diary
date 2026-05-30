@@ -2,24 +2,168 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Your Analytics</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - Workout Diary</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
-    <a href="/">← Back to Dashboard</a>
+<body class="app-body">
 
-    <h2>Your Fitness Analytics</h2>
-    <p>Here is the progress you have made so far:</p>
+    <header class="main-header">
+        <div class="header-container">
+            <a href="/" class="logo">💪 WorkoutDiary</a>
+            <nav class="nav-links">
+                <a href="/">Dashboard</a>
+                <a href="/workouts">History</a>
+                <a href="/analytics" class="active">Analytics</a>
+            </nav>
+        </div>
+    </header>
 
-    <hr>
+    <main class="main-container analytics-layout">
 
-<ul>
-        <li><strong>Total workouts completed:</strong> {{ total_workouts }}</li>
-        <li><strong>Total time spent training:</strong> {{ total_duration }} minutes or {{ (total_duration / 60) | round(1) }} hours</li>
-        <li><strong>Your favorite sport:</strong> {{ favorite_sport }}</li>
-        <li><strong>Your longest workout (Personal Record):</strong> {{ max_duration }} minutes</li>
-        <li><strong>Average workout duration:</strong> {{ avg_duration }} minutes</li>
-</ul>
+        <div class="page-header">
+            <h1>Analytics Dashboard</h1>
+        </div>
 
-    <hr>
+        <div class="analytics-summary-grid">
+            <div class="stat-card">
+                <span class="stat-label">Total Sessions</span>
+                <span class="stat-value">{{ total_workouts }}</span>
+                <span class="stat-subtext">Completed workouts</span>
+            </div>
+
+            <div class="stat-card">
+                <span class="stat-label">Time Spent</span>
+                <span class="stat-value">{{ total_hours }} <span class="stat-unit">hrs</span></span>
+                <span class="stat-subtext">Transformed into effort</span>
+            </div>
+
+            <div class="stat-card">
+                <span class="stat-label">Favorite Activity</span>
+                <span class="stat-value unique-text">{{ favorite_sport }}</span>
+                <span class="stat-subtext">Your number one choice</span>
+            </div>
+        </div>
+
+        <div class="charts-section-wrapper">
+            <div class="chart-header">
+                <h2>Activity Tracking</h2>
+                <div class="time-filters">
+                    <button id="btn-week" class="filter-btn active" onclick="switchTimeline('week')">Week</button>
+                    <button id="btn-month" class="filter-btn" onclick="switchTimeline('month')">Month</button>
+                    <button id="btn-year" class="filter-btn" onclick="switchTimeline('year')">Year</button>
+                </div>
+            </div>
+
+            <div id="chart-box" class="chart-container-box">
+                <canvas id="activityChart"></canvas>
+            </div>
+
+            <div id="github-grid-box" class="github-grid-wrapper" style="display: none;">
+                <div class="grid-container" id="contributions-grid"></div>
+                <div class="grid-legend">
+                    <span>Less</span>
+                    <div class="cube level-0"></div>
+                    <div class="cube level-1"></div>
+                    <div class="cube level-2"></div>
+                    <div class="cube level-3"></div>
+                    <span>More</span>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const weekLabels = {{ week_labels | tojson }};
+        const weekData = {{ week_data | tojson }};
+        const monthLabels = {{ month_labels | tojson }};
+        const monthData = {{ month_data | tojson }};
+        const yearData = {{ year_data | tojson }};
+
+        const ctx = document.getElementById('activityChart').getContext('2d');
+        let activityChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: weekLabels,
+                datasets: [{
+                    label: 'Workouts',
+                    data: weekData,
+                    borderColor: '#38bdf8',
+                    backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+                    y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8', stepSize: 1, beginAtZero: true } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        function generateGithubGrid() {
+            const gridContainer = document.getElementById('contributions-grid');
+            gridContainer.innerHTML = '';
+
+            const today = new Date();
+
+            for (let i = 364; i >= 0; i--) {
+                const currentDay = new Date();
+                currentDay.setDate(today.getDate() - i);
+
+                const offset = currentDay.getTimezoneOffset();
+                const correctedDay = new Date(currentDay.getTime() - (offset * 60 * 1000));
+                const dateString = correctedDay.toISOString().split('T')[0];
+
+                const count = yearData[dateString] || 0;
+
+                const cube = document.createElement('div');
+                cube.classList.add('cube');
+                cube.title = `${dateString}: ${count} workouts`;
+
+                if (count === 0) cube.classList.add('level-0');
+                else if (count === 1) cube.classList.add('level-1');
+                else if (count === 2) cube.classList.add('level-2');
+                else cube.classList.add('level-3');
+
+                gridContainer.appendChild(cube);
+            }
+        }
+
+        function switchTimeline(type) {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+
+            const chartBox = document.getElementById('chart-box');
+            const gridBox = document.getElementById('github-grid-box');
+
+            if (type === 'year') {
+                document.getElementById('btn-year').classList.add('active');
+                chartBox.style.display = 'none';
+                gridBox.style.display = 'block';
+                generateGithubGrid();
+            } else {
+                gridBox.style.display = 'none';
+                chartBox.style.display = 'block';
+
+                if (type === 'week') {
+                    document.getElementById('btn-week').classList.add('active');
+                    activityChart.data.labels = weekLabels;
+                    activityChart.data.datasets[0].data = weekData;
+                } else if (type === 'month') {
+                    document.getElementById('btn-month').classList.add('active');
+                    activityChart.data.labels = monthLabels;
+                    activityChart.data.datasets[0].data = monthData;
+                }
+                activityChart.update();
+            }
+        }
+    </script>
 </body>
 </html>
